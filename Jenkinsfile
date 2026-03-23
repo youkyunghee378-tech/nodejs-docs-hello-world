@@ -59,11 +59,10 @@ PY
         stage('Deploy to Azure') {
             steps {
                 sh '''
-                az webapp deploy \
+                az webapp deployment source config-zip \
                   --resource-group $AZURE_RESOURCE_GROUP \
                   --name $AZURE_WEBAPP_NAME \
-                  --src-path app.zip \
-                  --type zip
+                  --src app.zip
                 '''
             }
         }
