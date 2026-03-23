@@ -9,13 +9,6 @@ pipeline {
     }
 
     stages {
-
-        stage('Install Dependencies') {
-            steps {
-                sh 'npm install'
-            }
-        }
-
         stage('Azure Login') {
             steps {
                 withCredentials([usernamePassword(
@@ -50,7 +43,6 @@ with zipfile.ZipFile("app.zip", "w", zipfile.ZIP_DEFLATED) as z:
             path = os.path.join(root, f)
             z.write(path, os.path.relpath(path, "."))
 PY
-                ls -lh app.zip
                 '''
             }
         }
@@ -61,7 +53,7 @@ PY
                 az webapp config set \
                   --name $AZURE_WEBAPP_NAME \
                   --resource-group $AZURE_RESOURCE_GROUP \
-                  --startup-file "npm start"
+                  --startup-file "node server.js"
                 '''
             }
         }
@@ -76,6 +68,5 @@ PY
                 '''
             }
         }
-
     }
 }
