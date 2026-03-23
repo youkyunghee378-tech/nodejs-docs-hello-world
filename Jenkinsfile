@@ -36,11 +36,10 @@ pipeline {
         stage('Deploy to Azure') {
             steps {
                 sh '''
-                zip -r app.zip .
                 az webapp deploy \
                   --resource-group $AZURE_RESOURCE_GROUP \
                   --name $AZURE_WEBAPP_NAME \
-                  --src-path app.zip \
+                  --src-path . \
                   --type zip
                 '''
             }
