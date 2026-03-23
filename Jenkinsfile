@@ -55,6 +55,17 @@ PY
             }
         }
 
+        stage('Set Startup Command') {
+            steps {
+                sh '''
+                az webapp config set \
+                  --name $AZURE_WEBAPP_NAME \
+                  --resource-group $AZURE_RESOURCE_GROUP \
+                  --startup-file "npm start"
+                '''
+            }
+        }
+
         stage('Deploy to Azure') {
             steps {
                 sh '''
