@@ -28,8 +28,31 @@ pipeline {
                         -u $AZURE_CLIENT_ID \
                         -p $AZURE_CLIENT_SECRET \
                         --tenant $AZURE_TENANT_ID
+
+                    az account set --subscription $AZURE_SUBSCRIPTION_ID
                     '''
                 }
+            }
+        }
+
+        stage('Package App') {
+            steps {
+                sh '''
+                python3 - <<'PY'
+import os, zipfile
+
+with zipfile.ZipFile("app.zip", "w", zipfile.ZIP_DEFLATED) as z:
+    for root, dirs, files in os.walk("."):
+        dirs[:] = [d for d in dirs if d not in [".git", "node_modules"]]
+        for f in files:
+            if f == "app.zip":
+                continue
+            path = os.path.join(root, f)
+            z.write(path, os.path.relpath(path, "."))
+PY
+
+                ls -lh app.zip
+                '''
             }
         }
 
@@ -39,7 +62,7 @@ pipeline {
                 az webapp deploy \
                   --resource-group $AZURE_RESOURCE_GROUP \
                   --name $AZURE_WEBAPP_NAME \
-                  --src-path . \
+                  --src-path app.zip \
                   --type zip
                 '''
             }
