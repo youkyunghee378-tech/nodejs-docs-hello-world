@@ -9,6 +9,7 @@ pipeline {
     }
 
     stages {
+
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
@@ -17,12 +18,16 @@ pipeline {
 
         stage('Azure Login') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'jenkins-sp', usernameVariable: 'AZURE_CLIENT_ID', passwordVariable: 'AZURE_CLIENT_SECRET')]) {
+                withCredentials([usernamePassword(
+                    credentialsId: 'jenkins-sp',
+                    usernameVariable: 'AZURE_CLIENT_ID',
+                    passwordVariable: 'AZURE_CLIENT_SECRET'
+                )]) {
                     sh '''
                     az login --service-principal \
-                      -u $AZURE_CLIENT_ID \
-                      -p $AZURE_CLIENT_SECRET \
-                      --tenant $AZURE_TENANT_ID
+                        -u $AZURE_CLIENT_ID \
+                        -p $AZURE_CLIENT_SECRET \
+                        --tenant $AZURE_TENANT_ID
                     '''
                 }
             }
@@ -31,12 +36,15 @@ pipeline {
         stage('Deploy to Azure') {
             steps {
                 sh '''
-                az webapp up \
-                  --name $AZURE_WEBAPP_NAME \
+                zip -r app.zip .
+                az webapp deploy \
                   --resource-group $AZURE_RESOURCE_GROUP \
-                  --runtime "NODE:20-lts"
+                  --name $AZURE_WEBAPP_NAME \
+                  --src-path app.zip \
+                  --type zip
                 '''
             }
         }
+
     }
 }
