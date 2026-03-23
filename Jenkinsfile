@@ -35,15 +35,36 @@ pipeline {
             }
         }
 
-        stage('Deploy to Azure') {
+        stage('Package App') {
             steps {
                 sh '''
-                az webapp up \
-                  --name $AZURE_WEBAPP_NAME \
-                  --resource-group $AZURE_RESOURCE_GROUP \
-                  --runtime "NODE:20-lts"
+                python3 - <<'PY'
+import os, zipfile
+
+with zipfile.ZipFile("app.zip", "w", zipfile.ZIP_DEFLATED) as z:
+    for root, dirs, files in os.walk("."):
+        dirs[:] = [d for d in dirs if d not in [".git", "node_modules"]]
+        for f in files:
+            if f == "app.zip":
+                continue
+            path = os.path.join(root, f)
+            z.write(path, os.path.relpath(path, "."))
+PY
+                ls -lh app.zip
                 '''
             }
         }
+
+        stage('Deploy to Azure') {
+            steps {
+                sh '''
+                az webapp deployment source config-zip \
+                  --resource-group $AZURE_RESOURCE_GROUP \
+                  --name $AZURE_WEBAPP_NAME \
+                  --src app.zip
+                '''
+            }
+        }
+
     }
 }
