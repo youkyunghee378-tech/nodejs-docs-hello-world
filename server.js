@@ -11,11 +11,15 @@ const server = http.createServer((req, res) => {
 
   else if (req.url === '/api/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ status: 'ok' }));
+    res.end(JSON.stringify({
+      status: 'ok',
+      name: 'Yumin Ma',
+      time: new Date().toISOString()
+    }));
   }
 
   else {
-    res.writeHead(404);
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end('Not Found');
   }
 
